@@ -205,75 +205,78 @@ if page == "Dashboard":
 
     st.divider()
 
-    # ── Row 3: Income boxplot + Age histogram ─────────────────────
-    col1, col2 = st.columns(2)
+    # ── Rows 3 & 4: collapsed by default to speed up initial load ─
+    with st.expander("📊 Show more charts (Income, Age, Marital Status, Business Travel)"):
 
-    with col1:
-        st.subheader("Monthly Income vs Attrition")
-        fig, ax = make_fig()
-        sns.boxplot(data=fdf, x="Attrition_Label", y="MonthlyIncome",
-                    palette=PALETTE, ax=ax,
-                    boxprops=dict(edgecolor=TEXT_COL),
-                    medianprops=dict(color="white", linewidth=2),
-                    whiskerprops=dict(color=TEXT_COL),
-                    capprops=dict(color=TEXT_COL),
-                    flierprops=dict(marker="o", color=TEXT_COL, alpha=0.3, markersize=3))
-        style_ax(ax, xlabel="Status", ylabel="Monthly Income ($)")
-        ax.yaxis.set_major_formatter(mticker.FuncFormatter(lambda x, _: f"${x:,.0f}"))
-        fig.tight_layout()
-        st.pyplot(fig)
-        plt.close(fig)
-        med_left = fdf[fdf["Attrition"] == 1]["MonthlyIncome"].median()
-        med_stay = fdf[fdf["Attrition"] == 0]["MonthlyIncome"].median()
-        st.caption(f"💡 Leavers median: **${med_left:,.0f}** vs stayers: **${med_stay:,.0f}**.")
+        # ── Row 3: Income boxplot + Age histogram ─────────────────
+        col1, col2 = st.columns(2)
 
-    with col2:
-        st.subheader("Age Distribution by Attrition")
-        fig, ax = make_fig()
-        for label, color in PALETTE.items():
-            subset = fdf[fdf["Attrition_Label"] == label]["Age"]
-            ax.hist(subset, bins=20, color=color, alpha=0.7, label=label,
-                    edgecolor=BG_COLOR, linewidth=0.5)
-        style_ax(ax, xlabel="Age", ylabel="Count")
-        ax.grid(axis="x", visible=False)
-        ax.legend(facecolor=AX_COLOR, labelcolor=TEXT_COL, fontsize=8)
-        fig.tight_layout()
-        st.pyplot(fig)
-        plt.close(fig)
-        peak_age = fdf[fdf["Attrition"] == 1]["Age"].mode()[0]
-        st.caption(f"💡 Attrition peaks around age **{peak_age}** — early-career employees are most at-risk.")
+        with col1:
+            st.subheader("Monthly Income vs Attrition")
+            fig, ax = make_fig()
+            sns.boxplot(data=fdf, x="Attrition_Label", y="MonthlyIncome",
+                        palette=PALETTE, ax=ax,
+                        boxprops=dict(edgecolor=TEXT_COL),
+                        medianprops=dict(color="white", linewidth=2),
+                        whiskerprops=dict(color=TEXT_COL),
+                        capprops=dict(color=TEXT_COL),
+                        flierprops=dict(marker="o", color=TEXT_COL, alpha=0.3, markersize=3))
+            style_ax(ax, xlabel="Status", ylabel="Monthly Income ($)")
+            ax.yaxis.set_major_formatter(mticker.FuncFormatter(lambda x, _: f"${x:,.0f}"))
+            fig.tight_layout()
+            st.pyplot(fig)
+            plt.close(fig)
+            med_left = fdf[fdf["Attrition"] == 1]["MonthlyIncome"].median()
+            med_stay = fdf[fdf["Attrition"] == 0]["MonthlyIncome"].median()
+            st.caption(f"💡 Leavers median: **${med_left:,.0f}** vs stayers: **${med_stay:,.0f}**.")
 
-    st.divider()
+        with col2:
+            st.subheader("Age Distribution by Attrition")
+            fig, ax = make_fig()
+            for label, color in PALETTE.items():
+                subset = fdf[fdf["Attrition_Label"] == label]["Age"]
+                ax.hist(subset, bins=20, color=color, alpha=0.7, label=label,
+                        edgecolor=BG_COLOR, linewidth=0.5)
+            style_ax(ax, xlabel="Age", ylabel="Count")
+            ax.grid(axis="x", visible=False)
+            ax.legend(facecolor=AX_COLOR, labelcolor=TEXT_COL, fontsize=8)
+            fig.tight_layout()
+            st.pyplot(fig)
+            plt.close(fig)
+            peak_age = fdf[fdf["Attrition"] == 1]["Age"].mode()[0]
+            st.caption(f"💡 Attrition peaks around age **{peak_age}** — early-career employees are most at-risk.")
 
-    # ── Row 4: Marital Status + Business Travel ───────────────────
-    col1, col2 = st.columns(2)
+        st.divider()
 
-    with col1:
-        st.subheader("Marital Status vs Attrition")
-        fig, ax = make_fig()
-        sns.countplot(data=fdf, x="MaritalStatus", hue="Attrition_Label",
-                      palette=PALETTE, ax=ax, edgecolor=BG_COLOR, linewidth=0.8)
-        style_ax(ax, xlabel="Marital Status", ylabel="Employees")
-        ax.legend(title="", facecolor=AX_COLOR, labelcolor=TEXT_COL, fontsize=8)
-        fig.tight_layout()
-        st.pyplot(fig)
-        plt.close(fig)
-        single_rate = fdf[fdf["MaritalStatus"] == "Single"]["Attrition"].mean() * 100
-        st.caption(f"💡 Single employees have a **{single_rate:.1f}%** attrition rate.")
+        # ── Row 4: Marital Status + Business Travel ───────────────
+        col1, col2 = st.columns(2)
 
-    with col2:
-        st.subheader("Business Travel vs Attrition")
-        fig, ax = make_fig()
-        sns.countplot(data=fdf, x="BusinessTravel", hue="Attrition_Label",
-                      palette=PALETTE, ax=ax, edgecolor=BG_COLOR, linewidth=0.8)
-        ax.set_xticklabels(ax.get_xticklabels(), rotation=10, ha="right")
-        style_ax(ax, xlabel="Travel Frequency", ylabel="Employees")
-        ax.legend(title="", facecolor=AX_COLOR, labelcolor=TEXT_COL, fontsize=8)
-        fig.tight_layout()
-        st.pyplot(fig)
-        plt.close(fig)
-        freq_rate = fdf[fdf["BusinessTravel"] == "Travel_Frequently"]["Attrition"].mean() * 100
-        st.caption(f"💡 Frequent travelers have a **{freq_rate:.1f}%** attrition rate.")
+        with col1:
+            st.subheader("Marital Status vs Attrition")
+            fig, ax = make_fig()
+            sns.countplot(data=fdf, x="MaritalStatus", hue="Attrition_Label",
+                          palette=PALETTE, ax=ax, edgecolor=BG_COLOR, linewidth=0.8)
+            style_ax(ax, xlabel="Marital Status", ylabel="Employees")
+            ax.legend(title="", facecolor=AX_COLOR, labelcolor=TEXT_COL, fontsize=8)
+            fig.tight_layout()
+            st.pyplot(fig)
+            plt.close(fig)
+            single_rate = fdf[fdf["MaritalStatus"] == "Single"]["Attrition"].mean() * 100
+            st.caption(f"💡 Single employees have a **{single_rate:.1f}%** attrition rate.")
+
+        with col2:
+            st.subheader("Business Travel vs Attrition")
+            fig, ax = make_fig()
+            sns.countplot(data=fdf, x="BusinessTravel", hue="Attrition_Label",
+                          palette=PALETTE, ax=ax, edgecolor=BG_COLOR, linewidth=0.8)
+            ax.set_xticklabels(ax.get_xticklabels(), rotation=10, ha="right")
+            style_ax(ax, xlabel="Travel Frequency", ylabel="Employees")
+            ax.legend(title="", facecolor=AX_COLOR, labelcolor=TEXT_COL, fontsize=8)
+            fig.tight_layout()
+            st.pyplot(fig)
+            plt.close(fig)
+            freq_rate = fdf[fdf["BusinessTravel"] == "Travel_Frequently"]["Attrition"].mean() * 100
+            st.caption(f"💡 Frequent travelers have a **{freq_rate:.1f}%** attrition rate.")
 
     st.divider()
 
@@ -286,9 +289,9 @@ if page == "Dashboard":
     fig, ax = plt.subplots(figsize=(10, 4))
     fig.patch.set_facecolor(BG_COLOR)
     ax.set_facecolor(AX_COLOR)
-    sns.heatmap(corr, annot=True, fmt=".2f", cmap="coolwarm",
+    sns.heatmap(corr, annot=False, cmap="coolwarm",
                 linewidths=0.5, linecolor=BG_COLOR,
-                ax=ax, annot_kws={"size": 8, "color": "white"})
+                ax=ax)
     ax.tick_params(colors=TEXT_COL, labelsize=8)
     ax.set_xticklabels(ax.get_xticklabels(), rotation=30, ha="right", color=TEXT_COL)
     ax.set_yticklabels(ax.get_yticklabels(), color=TEXT_COL)
