@@ -39,11 +39,11 @@ Cakupan dari proyek ini meliputi:
 3. Machine Learning Modeling
     - Model: Random Forest Classifier
     - Preprocessing:
-    - Encoding (get_dummies)
-    - Feature scaling (StandardScaler)
+        - Encoding (get_dummies)
+        - Feature scaling (StandardScaler)
     - Output:
-    - Prediksi attrition (binary)
-    - Probabilitas attrition
+        - Prediksi attrition (binary)
+        - Probabilitas attrition
 4. Business Dashboard (Streamlit)
     - Monitoring KPI HR
     - Visualisasi faktor attrition
@@ -52,7 +52,7 @@ Cakupan dari proyek ini meliputi:
 
 ### Persiapan
 
-`employee_data.csv` <br>
+`employee_data.csv`
 
 Setup environment:
 
@@ -95,16 +95,6 @@ Dashboard dibuat menggunakan Streamlit dan memiliki 2 fitur utama:
             - Dampak lembur terhadap attrition
         - Attrition by Job Role
             - Role dengan risiko tertinggi
-        - Income vs Attrition
-            - Perbandingan gaji karyawan keluar vs bertahan
-        - Age Distribution
-            - Segmentasi usia dengan risiko attrition tinggi
-        - Marital Status Analysis
-            - Pengaruh status pernikahan
-        - Business Travel
-            - Dampak frekuensi perjalanan dinas
-        - Correlation Heatmap
-            - Hubungan antar fitur numerik
         - Feature Importance
             - Faktor paling berpengaruh dari model ML
 
@@ -122,9 +112,15 @@ Dashboard dibuat menggunakan Streamlit dan memiliki 2 fitur utama:
         - Probabilitas karyawan resign
         - Faktor utama penyebab karyawan resign
 
+3. Insights and Recommendation Page
+    - Key Insights
+        - Insights yang didapat dari analisis attrition rate
+    - Recommendations
+        - Rekomendasi yang disarankan kepada perusahaan
+
 ### Link Dashboard
 ```
-
+https://vd4n6nskjrft7dams98sa9.streamlit.app/
 ```
 
 ## Conclusion
