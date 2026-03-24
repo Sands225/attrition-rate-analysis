@@ -203,103 +203,6 @@ if page == "Dashboard":
         plt.close(fig)
         st.caption(f"💡 **{role_data.idxmax()}** has the highest role-level attrition at {role_data.max():.1f}%.")
 
-    st.divider()
-
-    # ── Rows 3 & 4: collapsed by default to speed up initial load ─
-    with st.expander("📊 Show more charts (Income, Age, Marital Status, Business Travel)"):
-
-        # ── Row 3: Income boxplot + Age histogram ─────────────────
-        col1, col2 = st.columns(2)
-
-        with col1:
-            st.subheader("Monthly Income vs Attrition")
-            fig, ax = make_fig()
-            sns.boxplot(data=fdf, x="Attrition_Label", y="MonthlyIncome",
-                        palette=PALETTE, ax=ax,
-                        boxprops=dict(edgecolor=TEXT_COL),
-                        medianprops=dict(color="white", linewidth=2),
-                        whiskerprops=dict(color=TEXT_COL),
-                        capprops=dict(color=TEXT_COL),
-                        flierprops=dict(marker="o", color=TEXT_COL, alpha=0.3, markersize=3))
-            style_ax(ax, xlabel="Status", ylabel="Monthly Income ($)")
-            ax.yaxis.set_major_formatter(mticker.FuncFormatter(lambda x, _: f"${x:,.0f}"))
-            fig.tight_layout()
-            st.pyplot(fig)
-            plt.close(fig)
-            med_left = fdf[fdf["Attrition"] == 1]["MonthlyIncome"].median()
-            med_stay = fdf[fdf["Attrition"] == 0]["MonthlyIncome"].median()
-            st.caption(f"💡 Leavers median: **${med_left:,.0f}** vs stayers: **${med_stay:,.0f}**.")
-
-        with col2:
-            st.subheader("Age Distribution by Attrition")
-            fig, ax = make_fig()
-            for label, color in PALETTE.items():
-                subset = fdf[fdf["Attrition_Label"] == label]["Age"]
-                ax.hist(subset, bins=20, color=color, alpha=0.7, label=label,
-                        edgecolor=BG_COLOR, linewidth=0.5)
-            style_ax(ax, xlabel="Age", ylabel="Count")
-            ax.grid(axis="x", visible=False)
-            ax.legend(facecolor=AX_COLOR, labelcolor=TEXT_COL, fontsize=8)
-            fig.tight_layout()
-            st.pyplot(fig)
-            plt.close(fig)
-            peak_age = fdf[fdf["Attrition"] == 1]["Age"].mode()[0]
-            st.caption(f"💡 Attrition peaks around age **{peak_age}** — early-career employees are most at-risk.")
-
-        st.divider()
-
-        # ── Row 4: Marital Status + Business Travel ───────────────
-        col1, col2 = st.columns(2)
-
-        with col1:
-            st.subheader("Marital Status vs Attrition")
-            fig, ax = make_fig()
-            sns.countplot(data=fdf, x="MaritalStatus", hue="Attrition_Label",
-                          palette=PALETTE, ax=ax, edgecolor=BG_COLOR, linewidth=0.8)
-            style_ax(ax, xlabel="Marital Status", ylabel="Employees")
-            ax.legend(title="", facecolor=AX_COLOR, labelcolor=TEXT_COL, fontsize=8)
-            fig.tight_layout()
-            st.pyplot(fig)
-            plt.close(fig)
-            single_rate = fdf[fdf["MaritalStatus"] == "Single"]["Attrition"].mean() * 100
-            st.caption(f"💡 Single employees have a **{single_rate:.1f}%** attrition rate.")
-
-        with col2:
-            st.subheader("Business Travel vs Attrition")
-            fig, ax = make_fig()
-            sns.countplot(data=fdf, x="BusinessTravel", hue="Attrition_Label",
-                          palette=PALETTE, ax=ax, edgecolor=BG_COLOR, linewidth=0.8)
-            ax.set_xticklabels(ax.get_xticklabels(), rotation=10, ha="right")
-            style_ax(ax, xlabel="Travel Frequency", ylabel="Employees")
-            ax.legend(title="", facecolor=AX_COLOR, labelcolor=TEXT_COL, fontsize=8)
-            fig.tight_layout()
-            st.pyplot(fig)
-            plt.close(fig)
-            freq_rate = fdf[fdf["BusinessTravel"] == "Travel_Frequently"]["Attrition"].mean() * 100
-            st.caption(f"💡 Frequent travelers have a **{freq_rate:.1f}%** attrition rate.")
-
-    st.divider()
-
-    # ── Correlation heatmap ───────────────────────────────────────
-    st.subheader("Feature Correlation Heatmap")
-    num_cols = ["Age", "MonthlyIncome", "YearsAtCompany", "TotalWorkingYears",
-                "JobLevel", "YearsInCurrentRole", "YearsSinceLastPromotion",
-                "YearsWithCurrManager", "DistanceFromHome", "Attrition"]
-    corr = fdf[num_cols].corr()
-    fig, ax = plt.subplots(figsize=(10, 4))
-    fig.patch.set_facecolor(BG_COLOR)
-    ax.set_facecolor(AX_COLOR)
-    sns.heatmap(corr, annot=False, cmap="coolwarm",
-                linewidths=0.5, linecolor=BG_COLOR,
-                ax=ax)
-    ax.tick_params(colors=TEXT_COL, labelsize=8)
-    ax.set_xticklabels(ax.get_xticklabels(), rotation=30, ha="right", color=TEXT_COL)
-    ax.set_yticklabels(ax.get_yticklabels(), color=TEXT_COL)
-    fig.tight_layout()
-    st.pyplot(fig)
-    plt.close(fig)
-    top_corr = corr["Attrition"].abs().drop("Attrition").idxmax()
-    st.caption(f"💡 **{top_corr}** has the strongest correlation with attrition in this segment.")
 
     st.divider()
 
@@ -424,24 +327,6 @@ elif page == "Prediction":
                 st.success(f"✅ Low Risk of Attrition — **{prob_pct:.1f}%** probability of leaving")
 
             st.progress(int(prob_pct), text=f"Attrition Probability: {prob_pct:.1f}%")
-
-            # Feature importance chart
-            if hasattr(model, "feature_importances_") and encoded_columns is not None:
-                st.markdown("**Top Features Driving This Prediction**")
-                fi   = pd.Series(model.feature_importances_, index=encoded_columns)
-                top8 = fi.sort_values(ascending=True).tail(8)
-                fig, ax = make_fig(h=3.5, w=10)
-                colors = [ACCENT[0] if v < top8.max() * 0.6 else ACCENT[1] for v in top8.values]
-                ax.barh(top8.index, top8.values, color=colors,
-                        edgecolor=BG_COLOR, linewidth=0.8, height=0.6)
-                for i, v in enumerate(top8.values):
-                    ax.text(v + 0.001, i, f"{v:.3f}", va="center", color=TEXT_COL, fontsize=8)
-                style_ax(ax, xlabel="Importance Score")
-                ax.grid(axis="y", visible=False)
-                ax.grid(axis="x", color=GRID_COL, linewidth=0.5, linestyle="--")
-                fig.tight_layout()
-                st.pyplot(fig)
-                plt.close(fig)
 
         except Exception as e:
             st.error(f"Prediction failed: {e}")
